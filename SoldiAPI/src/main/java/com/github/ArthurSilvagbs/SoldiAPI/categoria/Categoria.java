@@ -23,7 +23,7 @@ public class Categoria {
     private UUID idCategoria;
 
     @Setter
-    @Column(name = "id_user", length = 55)
+    @Column(name = "id_user")
     private UUID idUser;
 
     @Setter
@@ -37,5 +37,10 @@ public class Categoria {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public Categoria(UUID idUser, String nome) {
+       this.idUser = idUser;
+       this.nome = nome;
+    }
 
 }

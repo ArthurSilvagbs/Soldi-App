@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -21,7 +23,7 @@ public class UserService {
 
       String email = dto.email().trim().toLowerCase();
 
-      if (repository.existsByEmail(email)) {
+      if (verificarSeEmailJaCadastrado(email)) {
          throw new EmailJaExistenteException("O email informado já existe no cadastro do sistema.");
       }
 
@@ -33,5 +35,15 @@ public class UserService {
       );
 
       return mapper.userParaRegisterResponse(repository.save(user));
+   }
+
+   @Transactional
+   public boolean verificarSeIdUserJaCadastrado(UUID idUser) {
+      return repository.existsById(idUser);
+   }
+
+   @Transactional
+   private boolean verificarSeEmailJaCadastrado(String email) {
+      return repository.existsByEmail(email);
    }
 }

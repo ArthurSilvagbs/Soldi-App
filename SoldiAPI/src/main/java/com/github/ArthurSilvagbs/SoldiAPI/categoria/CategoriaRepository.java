@@ -1,6 +1,8 @@
 package com.github.ArthurSilvagbs.SoldiAPI.categoria;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,6 +13,11 @@ import java.util.UUID;
 public interface CategoriaRepository extends JpaRepository<Categoria, UUID> {
 
     Optional<Categoria> findByNome(String nome);
+    boolean existsByNome(String nome);
 
-    List<Categoria> findByIdUser(UUID idUser);
+    @Query("SELECT c FROM Categoria c WHERE c.nome = :nome AND c.idUser = :idUser")
+    Optional<Categoria> findByNomeAndIdUser(@Param("nome") String nome, @Param("idUser") UUID idUser);
+
+    @Query("SELECT c FROM Categoria c WHERE c.idUser = :idUser")
+    List<Categoria> findByIdUser(@Param("idUser") UUID idUser);
 }
