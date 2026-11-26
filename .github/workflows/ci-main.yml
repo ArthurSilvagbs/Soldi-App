@@ -41,9 +41,9 @@ jobs:
       JWT_SECRET: ci-only-secret-not-used-anywhere-else-0123456789abcdef
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -55,7 +55,7 @@ jobs:
 
       - name: Relatórios de teste (em caso de falha)
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: surefire-reports
           path: SoldiAPI/target/surefire-reports
@@ -69,7 +69,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/dependency-review-action@v4
         with:
@@ -80,7 +80,7 @@ jobs:
     name: Varredura de segredos
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
