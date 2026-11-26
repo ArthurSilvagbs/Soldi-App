@@ -1,0 +1,89 @@
+name: CI main
+
+# Pipeline cautelosa: porta de entrada da main.
+# Além de build e testes, confere a origem do PR, vulnerabilidades em
+# dependências e segredos vazados no histórico.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-main-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  origem:
+    name: PR vem da develop
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Só a develop pode entrar na main
+        run: |
+          if [ "${{ github.head_ref }}" != "develop" ]; then
+            echo "PRs para a main devem sair da develop (origem: ${{ github.head_ref }})."
+            exit 1
+          fi
+
+  build-test:
+    name: Build e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: SoldiAPI
+    env:
+      JWT_SECRET: ci-only-secret-not-used-anywhere-else-0123456789abcdef
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # clean: nada de artefato velho; verify: compila, testa e empacota.
+      - name: Build limpo e testes
+        run: mvn -B -ntp clean verify
+
+      - name: Relatórios de teste (em caso de falha)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: SoldiAPI/target/surefire-reports
+          if-no-files-found: ignore
+
+  dependencias:
+    name: Vulnerabilidades em dependências
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+
+  segredos:
+    name: Varredura de segredos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
