@@ -31,11 +31,11 @@ public class CategoriaService {
          throw new EntidadeNaoEncontradaException("O id do usuário não existe.");
       }
 
-      if (repository.existsByNome(dto.nome())) {
+      if (repository.existsByNomeAndIdUser(dto.nome(), userData.idUsuario())) {
          throw new EntidadeDuplicadaException("Já existe uma categoria com este nome.");
       }
 
-      Categoria categoria = repository.save(mapper.mapearParaCategoria(idUser, dto));
+      Categoria categoria = repository.saveAndFlush(mapper.mapearParaCategoria(idUser, dto));
 
       return mapper.mapearParaResponse(categoria);
    }
@@ -60,8 +60,8 @@ public class CategoriaService {
    }
 
    @Transactional
-   public CategoriaResponseDTO editarNomeCategoria(CategoriaUpdateDTO dto, String nome) {
-      Categoria categoria = repository.findByNome(nome)
+   public CategoriaResponseDTO editarNomeCategoria(CategoriaUpdateDTO dto, UUID id, JWTUserData userData) {
+      Categoria categoria = repository.findByIdCategoriaAndIdUser(id, userData.idUsuario())
          .orElseThrow(() -> new EntidadeNaoEncontradaException("Categoria não encontrada."));
 
       if (categoria.getNome().equals(dto.nome())) {
@@ -74,8 +74,8 @@ public class CategoriaService {
    }
 
    @Transactional
-   public void excluirCategoria(String id) {
-      Categoria categoria = repository.findById(UUID.fromString(id))
+   public void excluirCategoria(UUID id, JWTUserData userData) {
+      Categoria categoria = repository.findByIdCategoriaAndIdUser(id, userData.idUsuario())
          .orElseThrow(() -> new EntidadeNaoEncontradaException("Categoria não encontrada"));
 
       repository.delete(categoria);

@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/categoria")
@@ -46,22 +47,22 @@ public class CategoriaController{
       return ResponseEntity.status(HttpStatus.OK).body(lista);
    }
 
-   @PutMapping("/{nome}")
+   @PutMapping("/{id}")
    public ResponseEntity<CategoriaResponseDTO> atualizarNomeCategoria(
       @Valid @RequestBody CategoriaUpdateDTO dto,
-      @PathVariable("nome") String nome,
+      @PathVariable("id") UUID id,
       @AuthenticationPrincipal JWTUserData userData
    ) {
-      CategoriaResponseDTO response = service.editarNomeCategoria(dto, nome);
+      CategoriaResponseDTO response = service.editarNomeCategoria(dto, id, userData);
       return ResponseEntity.status(HttpStatus.OK).body(response);
    }
 
    @DeleteMapping("/{id}")
    public ResponseEntity<Void> deletarCategoriaPorId(
-      @PathVariable("id") String id,
+      @PathVariable("id") UUID id,
       @AuthenticationPrincipal JWTUserData userData
    ) {
-      service.excluirCategoria(id);
+      service.excluirCategoria(id, userData);
       return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
    }
 

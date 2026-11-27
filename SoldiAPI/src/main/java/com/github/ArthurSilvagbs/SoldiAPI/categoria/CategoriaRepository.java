@@ -18,6 +18,12 @@ public interface CategoriaRepository extends JpaRepository<Categoria, UUID> {
     @Query("SELECT c FROM Categoria c WHERE c.nome = :nome AND c.idUser = :idUser")
     Optional<Categoria> findByNomeAndIdUser(@Param("nome") String nome, @Param("idUser") UUID idUser);
 
+    @Query("SELECT COUNT(c) > 0 FROM Categoria c WHERE c.nome = :nome AND c.idUser = :idUser")
+    boolean existsByNomeAndIdUser(@Param("nome") String nome, @Param("idUser") UUID idUser);
+
+    @Query("SELECT c FROM Categoria c WHERE c.idCategoria = :idCategoria AND c.idUser = :idUser")
+    Optional<Categoria> findByIdCategoriaAndIdUser(@Param("idCategoria") UUID idCategoria, @Param("idUser") UUID idUser);
+
     @Query("SELECT c FROM Categoria c WHERE c.idUser = :idUser")
     List<Categoria> findByIdUser(@Param("idUser") UUID idUser);
 }
