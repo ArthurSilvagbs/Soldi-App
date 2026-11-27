@@ -141,6 +141,14 @@ public class GlobalHandlerException {
       return resposta(HttpStatus.NOT_FOUND, "Rota não encontrada.", request);
    }
 
+   @ExceptionHandler(EntidadeNaoEncontradaException.class)
+   public ResponseEntity<ErrorResponse> handlerEntidadeNaoEcontrada(
+      EntidadeNaoEncontradaException e,
+      HttpServletRequest request
+   ) {
+      return resposta(HttpStatus.NOT_FOUND, e.getMessage(), request);
+   }
+
    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
    public ResponseEntity<ErrorResponse> handlerMetodoNaoSuportado(
       HttpRequestMethodNotSupportedException e,
