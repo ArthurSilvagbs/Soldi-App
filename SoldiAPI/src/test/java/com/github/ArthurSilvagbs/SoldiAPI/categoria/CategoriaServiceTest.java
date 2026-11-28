@@ -3,8 +3,10 @@ package com.github.ArthurSilvagbs.SoldiAPI.categoria;
 import com.github.ArthurSilvagbs.SoldiAPI.categoria.dtos.CategoriaCreateDTO;
 import com.github.ArthurSilvagbs.SoldiAPI.categoria.dtos.CategoriaResponseDTO;
 import com.github.ArthurSilvagbs.SoldiAPI.categoria.dtos.CategoriaUpdateDTO;
+import com.github.ArthurSilvagbs.SoldiAPI.exceptions.CategoriaEmUsoException;
 import com.github.ArthurSilvagbs.SoldiAPI.exceptions.EntidadeDuplicadaException;
 import com.github.ArthurSilvagbs.SoldiAPI.exceptions.EntidadeNaoEncontradaException;
+import com.github.ArthurSilvagbs.SoldiAPI.gasto.GastoConsultaService;
 import com.github.ArthurSilvagbs.SoldiAPI.security.JWTUserData;
 import com.github.ArthurSilvagbs.SoldiAPI.user.UserService;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,9 @@ class CategoriaServiceTest {
 
    @Mock
    private UserService userService;
+
+   @Mock
+   private GastoConsultaService gastoConsultaService;
 
    @Spy
    private CategoriaMapper mapper = new CategoriaMapper();
@@ -159,6 +164,19 @@ class CategoriaServiceTest {
       service.excluirCategoria(id, userData);
 
       verify(repository).delete(categoria);
+   }
+
+   @Test
+   void excluirCategoria_comGastos_deveLancarEmUso() {
+      UUID id = UUID.randomUUID();
+      Categoria categoria = new Categoria(idUser, "Mercado");
+      when(repository.findByIdCategoriaAndIdUser(id, idUser)).thenReturn(Optional.of(categoria));
+      when(gastoConsultaService.categoriaPossuiGastos(id, idUser)).thenReturn(true);
+
+      assertThatThrownBy(() -> service.excluirCategoria(id, userData))
+         .isInstanceOf(CategoriaEmUsoException.class);
+
+      verify(repository, never()).delete(any());
    }
 
    @Test

@@ -3,8 +3,10 @@ package com.github.ArthurSilvagbs.SoldiAPI.categoria;
 import com.github.ArthurSilvagbs.SoldiAPI.categoria.dtos.CategoriaCreateDTO;
 import com.github.ArthurSilvagbs.SoldiAPI.categoria.dtos.CategoriaResponseDTO;
 import com.github.ArthurSilvagbs.SoldiAPI.categoria.dtos.CategoriaUpdateDTO;
+import com.github.ArthurSilvagbs.SoldiAPI.exceptions.CategoriaEmUsoException;
 import com.github.ArthurSilvagbs.SoldiAPI.exceptions.EntidadeDuplicadaException;
 import com.github.ArthurSilvagbs.SoldiAPI.exceptions.EntidadeNaoEncontradaException;
+import com.github.ArthurSilvagbs.SoldiAPI.gasto.GastoConsultaService;
 import com.github.ArthurSilvagbs.SoldiAPI.security.JWTUserData;
 import com.github.ArthurSilvagbs.SoldiAPI.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,6 +24,7 @@ public class CategoriaService {
    private final CategoriaRepository repository;
    private final CategoriaMapper mapper;
    private final UserService userService;
+   private final GastoConsultaService gastoConsultaService;
 
    @Transactional
    public CategoriaResponseDTO criarCategoria(CategoriaCreateDTO dto, JWTUserData userData) {
@@ -46,6 +50,11 @@ public class CategoriaService {
          .orElseThrow(() -> new EntidadeNaoEncontradaException("Categoria não encontrada."));
 
       return mapper.mapearParaResponse(categoria);
+   }
+
+   @Transactional(readOnly = true)
+   public boolean verificarSeCategoriaExiste(UUID idCategoria, JWTUserData userData) {
+      return repository.existsByIdCategoriaAndIdUser(idCategoria, userData.idUsuario());
    }
 
    @Transactional(readOnly = true)
@@ -77,6 +86,10 @@ public class CategoriaService {
    public void excluirCategoria(UUID id, JWTUserData userData) {
       Categoria categoria = repository.findByIdCategoriaAndIdUser(id, userData.idUsuario())
          .orElseThrow(() -> new EntidadeNaoEncontradaException("Categoria não encontrada"));
+
+      if (gastoConsultaService.categoriaPossuiGastos(id, userData.idUsuario())) {
+         throw new CategoriaEmUsoException("A categoria possui gastos e não pode ser excluída.");
+      }
 
       repository.delete(categoria);
    }

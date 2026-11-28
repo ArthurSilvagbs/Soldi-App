@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalHandlerException {
 
-   @ExceptionHandler({EmailJaExistenteException.class, EntidadeDuplicadaException.class})
+   @ExceptionHandler({EmailJaExistenteException.class, EntidadeDuplicadaException.class, CategoriaEmUsoException.class})
    public ResponseEntity<ErrorResponse> handlerDuplicado(
       RuntimeException e,
       HttpServletRequest request
@@ -99,6 +99,14 @@ public class GlobalHandlerException {
       HttpServletRequest request
    ) {
       return resposta(HttpStatus.BAD_REQUEST, "O parâmetro '" + e.getParameterName() + "' é obrigatório.", request);
+   }
+
+   @ExceptionHandler(ValorInvalidoException.class)
+   public ResponseEntity<ErrorResponse> handlerValorInvalido(
+      ValorInvalidoException e,
+      HttpServletRequest request
+   ) {
+      return resposta(HttpStatus.BAD_REQUEST, e.getMessage(), request);
    }
 
    @ExceptionHandler(BadCredentialsException.class)
